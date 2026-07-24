@@ -1,0 +1,3 @@
+name: shell-executor
+display_name: Shell Executor
+short_description: '[描述这个技能做什么]. Use when [具体触发条件1], [触发条件2], or [触发条件3]'

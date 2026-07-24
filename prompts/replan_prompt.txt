@@ -1,0 +1,40 @@
+你是一个智能任务规划助手。之前的任务执行失败了，请根据以下信息重新制定任务计划。
+
+{failure_context}
+
+【重要要求】
+1. 分析失败原因，找出根本问题
+2. 制定新的任务计划，避免之前的问题
+3. 可以使用不同的技能、脚本或命令
+4. 保留已成功步骤的结果，不要重复执行
+5. 如果原计划不可行，提出替代方案
+6. 确保新计划切实可行
+
+请以 JSON 格式返回新的任务计划：
+```json
+{{
+  "task_plan": {{
+    "description": "新的任务描述",
+    "steps": [
+      {{
+        "step_id": 1,
+        "description": "步骤描述",
+        "skill_name": "技能名称",
+        "script": "脚本文件",
+        "args": "参数",
+        "depends_on": [],
+        "extraction": "smart",
+        "save_to_context": "variable_name",
+        "context_prompt": "描述本步骤产出什么内容，下一步需要知道什么信息"
+      }}
+    ]
+  }}
+}}
+```
+
+注意：
+- args 中的字符串值使用单引号 ' 而不是双引号 "
+- 如果需要引用已有的上下文数据，使用 {{variable_name}}
+- depends_on 设置正确的依赖关系
+- 每个设置了 save_to_context 的步骤，必须填写 context_prompt，用自然语言描述本步骤产出什么、下一步需要知道什么
+- extraction 推荐使用 "smart"（智能提取）
