@@ -37,27 +37,6 @@
 }
 ```
 
-示例 2：修改文件内容（必须通过工具，不能直接生成文件内容）
-```json
-{
-  "tool_call": {
-    "skill_name": "text-file-ops",
-    "script": "replace_text.py",
-    "args": "config.java 'OLD_VALUE' 'NEW_VALUE'"
-  }
-}
-```
-
-示例 3：向文件追加内容
-```json
-{
-  "tool_call": {
-    "skill_name": "text-file-ops",
-    "script": "write_file.py",
-    "args": "config.java '新增的代码行' --mode append"
-  }
-}
-```
 
 ---
 
@@ -205,8 +184,8 @@
         "step_id": 2,
         "description": "创建代码文件和配置文件",
         "skill_name": "text-file-ops",
-        "script": "write_file.py",
-        "args": "myproject/src/main.py 'print(\"hello\")'",
+        "script": "text_ops.py",
+        "args": "write --file myproject/src/main.py --content 'print(\"hello\")'",
         "depends_on": [1],
         "extraction": null,
         "save_to_context": null,
