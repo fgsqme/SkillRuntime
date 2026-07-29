@@ -1,0 +1,40 @@
+任务执行后验证未通过，请分析问题并创建修复计划。
+
+【原始需求】
+{original_query}
+
+【已执行的步骤和结果】
+{execution_results}
+
+【验证结果】
+状态: 未通过
+原因: {verification_reason}
+发现的问题:
+{issues_list}
+
+【已保存的上下文数据】
+{context_data}
+
+请创建修复计划来解决以上问题，确保任务最终完成。
+
+请以 JSON 格式返回任务计划：
+```json
+{{
+  "task_plan": {{
+    "description": "修复计划描述",
+    "steps": [
+      {{
+        "step_id": 1,
+        "description": "步骤描述",
+        "skill_name": "技能名称",
+        "script": "脚本文件",
+        "args": "参数",
+        "depends_on": [],
+        "extraction": "smart",
+        "save_to_context": "variable_name",
+        "context_prompt": "描述本步骤产出什么内容"
+      }}
+    ]
+  }}
+}}
+```

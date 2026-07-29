@@ -600,12 +600,22 @@ class SkillRuntime:
                 # 提取数据并保存到上下文
                 if step.save_to_context:
                     if step.context_prompt and self.ai:
-                        extraction_prompt = (
-                            f"请根据以下说明，从执行结果中提取关键信息：\n\n"
-                            f"【说明】\n{step.context_prompt}\n\n"
-                            f"【执行结果】\n{output}\n\n"
-                            f"请直接返回提取出的核心内容，不要加任何解释或标记。"
-                        )
+                        # 从文件加载提取提示词模板
+                        extraction_prompt_path = Path(__file__).parent / "prompts" / "extraction_prompt.txt"
+                        if extraction_prompt_path.exists():
+                            extraction_prompt_template = extraction_prompt_path.read_text(encoding='utf-8')
+                            extraction_prompt = extraction_prompt_template.format(
+                                extraction_instruction=step.context_prompt,
+                                output=output
+                            )
+                        else:
+                            # 回退：内联构建
+                            extraction_prompt = (
+                                f"请根据以下说明，从执行结果中提取关键信息：\n\n"
+                                f"【说明】\n{step.context_prompt}\n\n"
+                                f"【执行结果】\n{output}\n\n"
+                                f"请直接返回提取出的核心内容，不要加任何解释或标记。"
+                            )
                         extracted_value = self.ai.chat_with_skills(
                             extraction_prompt, "", []
                         ).strip()
@@ -887,7 +897,17 @@ class SkillRuntime:
             print(f"\n🔍 [验证] 正在验证任务完成情况...")
         
         # 调用 AI 验证
-        verify_prompt = f"""请根据以下信息判断任务是否已成功完成。
+        # 从文件加载验证提示词模板
+        verify_prompt_path = Path(__file__).parent / "prompts" / "verify_completion_prompt.txt"
+        if verify_prompt_path.exists():
+            verify_prompt_template = verify_prompt_path.read_text(encoding='utf-8')
+            verify_prompt = verify_prompt_template.format(
+                original_query=original_query,
+                execution_results=result_text
+            )
+        else:
+            # 回退：内联构建
+            verify_prompt = f"""请根据以下信息判断任务是否已成功完成。
 
 【原始需求】
 {original_query}
@@ -918,6 +938,12 @@ class SkillRuntime:
                 "",
                 []  # 子 Agent 隔离
             )
+            
+            json_match = re.search(r'```(?:json)?\s*(.*?)```', response, re.DOTALL)
+            if json_match:
+                json_str = json_match.group(1).strip()
+            else:
+                json_str = response.strip()
             
             # 解析验证结果
             import json
@@ -982,7 +1008,21 @@ class SkillRuntime:
             if step.result:
                 result_summary.append(f"   结果: {step.result[:500]}")
         
-        fix_prompt = f"""任务执行后验证未通过，请分析问题并创建修复计划。
+        # 从文件加载修复计划提示词模板
+        fix_prompt_path = Path(__file__).parent / "prompts" / "fix_plan_prompt.txt"
+        if fix_prompt_path.exists():
+            fix_prompt_template = fix_prompt_path.read_text(encoding='utf-8')
+            issues_list = "\n".join(f"- {issue}" for issue in issues) if issues else "无"
+            fix_prompt = fix_prompt_template.format(
+                original_query=original_query,
+                execution_results="\n".join(result_summary),
+                verification_reason=reason,
+                issues_list=issues_list,
+                context_data="\n".join(f"  {k} = {str(v)[:200]}" for k, v in plan.context.items()) if plan.context else "无"
+            )
+        else:
+            # 回退：内联构建
+            fix_prompt = f"""任务执行后验证未通过，请分析问题并创建修复计划。
 
 【原始需求】
 {original_query}
